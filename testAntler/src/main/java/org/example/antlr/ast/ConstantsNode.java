@@ -13,11 +13,11 @@ public class ConstantsNode implements ExpressionNode {
 
 
     @Override
-    public JsonElement evaluate(EvaluationContext context) {
-        value = value.toLowerCase();
-        if (value.equals("math.pi")) {
-            return new JsonPrimitive(Math.PI);
-        }
+    public ExpressionResult evaluate(EvaluationContext context) {
+//        value = value.toLowerCase();
+//        if (value.equals("math.pi")) {
+//            return new JsonPrimitive(Math.PI);
+//        }
         return null;
     }
 }

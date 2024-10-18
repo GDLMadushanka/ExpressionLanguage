@@ -17,18 +17,19 @@ public class ArrayLiteralNode implements ExpressionNode {
     }
 
     @Override
-    public JsonElement evaluate(EvaluationContext context) {
-        JsonArray array = new JsonArray();
-        for (ExpressionNode element : elements) {
-            Object result = element.evaluate(context);
-            // try to parse result to json
-            try {
-                JsonElement temp = JsonParser.parseString(result.toString());
-                array.add(temp);
-            } catch (JsonSyntaxException ex) {
-                throw new EvaluationException("Result of " + element + " is not a valid JSON");
-            }
-        }
-        return array;
+    public ExpressionResult evaluate(EvaluationContext context) {
+//        JsonArray array = new JsonArray();
+//        for (ExpressionNode element : elements) {
+//            Object result = element.evaluate(context);
+//            // try to parse result to json
+//            try {
+//                JsonElement temp = JsonParser.parseString(result.toString());
+//                array.add(temp);
+//            } catch (JsonSyntaxException ex) {
+//                throw new EvaluationException("Result of " + element + " is not a valid JSON");
+//            }
+//        }
+//        return array;
+        return null;
     }
 }

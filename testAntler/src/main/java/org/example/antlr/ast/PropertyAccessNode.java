@@ -13,7 +13,7 @@ public class PropertyAccessNode implements ExpressionNode {
     }
 
     @Override
-    public JsonElement evaluate(EvaluationContext context) {
+    public ExpressionResult evaluate(EvaluationContext context) {
         return null;
     }
 

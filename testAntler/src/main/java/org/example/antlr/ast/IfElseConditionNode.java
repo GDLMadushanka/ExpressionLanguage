@@ -16,11 +16,12 @@ public class IfElseConditionNode implements ExpressionNode {
     }
 
     @Override
-    public JsonElement evaluate(EvaluationContext context) {
-        if (condition.evaluate(context).isJsonPrimitive() && condition.evaluate(context).getAsBoolean()) {
-            return trueExpression.evaluate(context);
-        } else {
-            return falseExpression.evaluate(context);
-        }
+    public ExpressionResult evaluate(EvaluationContext context) {
+//        if (condition.evaluate(context).isJsonPrimitive() && condition.evaluate(context).getAsBoolean()) {
+//            return trueExpression.evaluate(context);
+//        } else {
+//            return falseExpression.evaluate(context);
+//        }
+        return null;
     }
 }

@@ -14,18 +14,19 @@ public class UnaryOperationNode implements ExpressionNode {
     }
 
     @Override
-    public JsonElement evaluate(EvaluationContext context) {
-        JsonElement value = expressionNode.evaluate(context);
-        boolean valid = value.isJsonPrimitive() && value.getAsJsonPrimitive().isBoolean()
-                && value.isJsonPrimitive() && value.getAsJsonPrimitive().isBoolean();
-        if (valid) {
-            if (negate) {
-                return new JsonPrimitive(!value.getAsBoolean());
-            } else {
-                return value;
-            }
-        } else {
-            throw new IllegalArgumentException("Invalid argument type for unary operation");
-        }
+    public ExpressionResult evaluate(EvaluationContext context) {
+//        JsonElement value = expressionNode.evaluate(context);
+//        boolean valid = value.isJsonPrimitive() && value.getAsJsonPrimitive().isBoolean()
+//                && value.isJsonPrimitive() && value.getAsJsonPrimitive().isBoolean();
+//        if (valid) {
+//            if (negate) {
+//                return new JsonPrimitive(!value.getAsBoolean());
+//            } else {
+//                return value;
+//            }
+//        } else {
+//            throw new IllegalArgumentException("Invalid argument type for unary operation");
+//        }
+        return null;
     }
 }
