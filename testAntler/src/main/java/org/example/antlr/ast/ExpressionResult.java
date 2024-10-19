@@ -3,6 +3,7 @@ package org.example.antlr.ast;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
+import org.example.antlr.exception.EvaluationException;
 
 /**
  * This class represents the result of an expression evaluation.
@@ -15,6 +16,9 @@ public class ExpressionResult {
         this.value = value;
     }
 
+    public ExpressionResult(Number value) {
+        this.value = value;
+    }
     // Constructor for int
     public ExpressionResult(int value) {
         this.value = value;
@@ -50,6 +54,12 @@ public class ExpressionResult {
         if (value == null) {
             return null;
         } else if (value instanceof String) {
+            // if quoted, remove quotes
+            if (((String) value).startsWith("\"") && ((String) value).endsWith("\"")) {
+                return ((String) value).substring(1, ((String) value).length() - 1);
+            } else if (((String) value).startsWith("'") && ((String) value).endsWith("'")) {
+                return ((String) value).substring(1, ((String) value).length() - 1);
+            }
             return (String) value;
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isString()) {
             return ((JsonPrimitive) value).getAsString();
@@ -64,7 +74,7 @@ public class ExpressionResult {
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isNumber()) {
             return ((JsonPrimitive) value).getAsInt();
         }
-        throw new IllegalStateException("Value cannot be converted to int");
+        throw new EvaluationException("Value : " + value +  " cannot be converted to int");
     }
 
     // Method to get value as double
@@ -74,7 +84,7 @@ public class ExpressionResult {
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isNumber()) {
             return ((JsonPrimitive) value).getAsDouble();
         }
-        throw new IllegalStateException("Value cannot be converted to double");
+        throw new EvaluationException("Value : " + value +  " cannot be converted to double");
     }
 
     // Method to get value as boolean
@@ -84,7 +94,7 @@ public class ExpressionResult {
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isBoolean()) {
             return ((JsonPrimitive) value).getAsBoolean();
         }
-        throw new IllegalStateException("Value cannot be converted to boolean");
+        throw new EvaluationException("Value : " + value +  " cannot be converted to boolean");
     }
 
     // Method to get value as JsonElement
@@ -92,7 +102,7 @@ public class ExpressionResult {
         if (value instanceof JsonElement) {
             return (JsonElement) value;
         }
-        throw new IllegalStateException("Value is not a JsonElement");
+        throw new EvaluationException("Value is not a JsonElement");
     }
 
     // Method to check the actual type of the result

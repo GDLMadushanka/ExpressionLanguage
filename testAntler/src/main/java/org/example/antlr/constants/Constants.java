@@ -14,14 +14,5 @@ public class Constants {
     public static final String  TRIM = "trim";
     public static final String  REPLACE = "replace";
     public static final String  SPLIT = "split";
-    public static final String  ABS = "Math.abs";
-    public static final String  FLOOR = "Math.floor";
-    public static final String  CEIL = "Math.ceil";
-    public static final String  SQRT = "Math.sqrt";
-    public static final String  LOGARITHM = "Math.log";
-    public static final String  POW = "Math.pow";
-    public static final String  SUM = "Math.sum";
-    public static final String  AVG = "Math.average";
-    public static final String  MAX = "Math.max";
-    public static final String  MIN = "Math.min";
+    public static final String  NOW = "now";
 }

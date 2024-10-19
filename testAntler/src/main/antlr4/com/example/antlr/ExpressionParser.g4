@@ -6,6 +6,7 @@ options {
 
 expression
     : comparisonExpression
+    | EOF
     ;
 
 comparisonExpression
@@ -13,7 +14,7 @@ comparisonExpression
     ;
 
 logicalExpression
-    : arithmeticExpression (AND logicalExpression | OR logicalExpression | NOT logicalExpression)?
+    : arithmeticExpression (AND logicalExpression | OR logicalExpression)?
     ;
 
 arithmeticExpression
@@ -21,7 +22,7 @@ arithmeticExpression
     ;
 
 term
-    : factor ( (MULT | DIV) factor )*
+    : factor ( (ASTERISK | DIV | MODULO) factor )*
     ;
 
 factor

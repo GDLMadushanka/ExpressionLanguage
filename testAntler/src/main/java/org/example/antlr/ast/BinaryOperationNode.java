@@ -31,20 +31,20 @@ public class BinaryOperationNode implements ExpressionNode {
 
         try {
             switch (operator) {
-//                case "+":
-//                    return handleAddition(leftValue, rightValue);
-//                case "-":
-//                    return handleArithmetic(leftValue, rightValue, (a, b) -> a - b);
-//                case "*":
-//                    return handleArithmetic(leftValue, rightValue, (a, b) -> a * b);
-//                case "/":
-//                    return handleArithmetic(leftValue, rightValue, (a, b) -> a / b);
-//                case "%":
-//                    return handleArithmetic(leftValue, rightValue, (a, b) -> a % b);
+                case "+":
+                    return handleAddition(leftValue, rightValue);
+                case "-":
+                    return handleArithmetic(leftValue, rightValue,"-");
+                case "*":
+                    return handleArithmetic(leftValue, rightValue, "*");
+                case "/":
+                    return handleArithmetic(leftValue, rightValue, "/");
+                case "%":
+                    return handleArithmetic(leftValue, rightValue, "%");
                 case "==":
-                    return handleComparison(leftValue, rightValue, (a, b) -> a == b);
+                    return handleEquality(leftValue, rightValue, String::equals);
                 case "!=":
-                    return handleComparison(leftValue, rightValue, (a, b) -> a != b);
+                    return handleEquality(leftValue, rightValue, (a, b) -> !a.equals(b));
                 case "<":
                     return handleComparison(leftValue, rightValue, (a, b) -> a < b);
                 case "<=":
@@ -53,16 +53,18 @@ public class BinaryOperationNode implements ExpressionNode {
                     return handleComparison(leftValue, rightValue, (a, b) -> a > b);
                 case ">=":
                     return handleComparison(leftValue, rightValue, (a, b) -> a >= b);
-//                case "and":
-//                    return handleLogical(leftValue, rightValue, (a, b) -> a && b);
-//                case "or":
-//                    return handleLogical(leftValue, rightValue, (a, b) -> a || b);
+                case "and":
+                case "&&":
+                    return handleLogical(leftValue, rightValue, (a, b) -> a && b);
+                case "or":
+                case "||":
+                    return handleLogical(leftValue, rightValue, (a, b) -> a || b);
                 default:
                     throw new EvaluationException("Unsupported operator: " + operator);
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error evaluating binary operation", e);
-            throw new EvaluationException("Error evaluating binary operation: " + e.getMessage(), e);
+            throw new EvaluationException("Error evaluating binary operation: \"" + operator + "\", "
+                    + e.getMessage(), e);
         }
     }
 
@@ -70,44 +72,79 @@ public class BinaryOperationNode implements ExpressionNode {
                                               BiFunction<Double, Double, Boolean> comparison) {
         return new ExpressionResult(comparison.apply(leftValue.asDouble(), rightValue.asDouble()));
     }
+
+    private ExpressionResult handleEquality(ExpressionResult leftValue, ExpressionResult rightValue,
+                                            BiFunction<String, String, Boolean> comparison) {
+        return new ExpressionResult(comparison.apply(leftValue.asString(), rightValue.asString()));
+    }
+
+    private ExpressionResult handleLogical(ExpressionResult leftValue, ExpressionResult rightValue,
+                                           BiFunction<Boolean, Boolean, Boolean> logicOperation) {
+        return new ExpressionResult(logicOperation.apply(leftValue.asBoolean(), rightValue.asBoolean()));
+    }
+
+    private ExpressionResult handleAddition(ExpressionResult leftValue, ExpressionResult rightValue) {
+        if (leftValue.getType().equals(Double.class) || rightValue.getType().equals(Double.class)) {
+            return new ExpressionResult(leftValue.asDouble() + rightValue.asDouble());
+        } else if (leftValue.getType().equals(Integer.class) && rightValue.getType().equals(Integer.class)) {
+            return new ExpressionResult(leftValue.asInt() + rightValue.asInt());
+        } else if (leftValue.getType().equals(String.class) || rightValue.getType().equals(String.class)) {
+            return new ExpressionResult(leftValue.asString().concat(rightValue.asString()));
+        } else {
+            throw new EvaluationException("Unsupported inputs for + operation: " + leftValue + " and " + rightValue);
+        }
+    }
+
+    private ExpressionResult handleArithmetic(ExpressionResult leftValue, ExpressionResult rightValue,
+                                         String operator) {
+        boolean isDouble = leftValue.getType().equals(Double.class) || rightValue.getType().equals(Double.class);
+        boolean isInteger = leftValue.getType().equals(Integer.class) && rightValue.getType().equals(Integer.class);
+        switch (operator) {
+            case "-":
+                if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() - rightValue.asDouble());
+                } else if (isInteger) {
+                    return new ExpressionResult(leftValue.asInt() - rightValue.asInt());
+                } else {
+                    throw new EvaluationException("Unsupported inputs for - operation: "
+                            + leftValue.asString() + " and " + rightValue.asString());
+                }
+            case "*":
+                if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() * rightValue.asDouble());
+                } else if (isInteger) {
+                    return new ExpressionResult(leftValue.asInt() * rightValue.asInt());
+                } else {
+                    throw new EvaluationException("Unsupported inputs for * operation: "
+                            + leftValue.asString() + " and " + rightValue.asString());
+                }
+            case "/":
+                if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() / rightValue.asDouble());
+                } else if (isInteger) {
+                    return new ExpressionResult(leftValue.asInt() / rightValue.asInt());
+                } else {
+                    throw new EvaluationException("Unsupported inputs for / operation: "
+                            + leftValue.asString() + " and " + rightValue.asString());
+                }
+            case "%":
+                if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() % rightValue.asDouble());
+                } else if (isInteger) {
+                    return new ExpressionResult(leftValue.asInt() % rightValue.asInt());
+                } else {
+                    throw new EvaluationException("Unsupported inputs for % operation: "
+                            + leftValue.asString() + " and " + rightValue.asString());
+                }
+            default:
+                throw new EvaluationException("Unsupported operator: " + operator);
+        }
+    }
 }
-
-
-//    private JsonElement handleAddition(JsonElement leftValue, JsonElement rightValue) {
-//        if (isNumber(leftValue) && isNumber(rightValue)) {
-//            double result = leftValue.getAsDouble() + rightValue.getAsDouble();
-//            return new JsonPrimitive(result);
-//        } else if (isString(leftValue) || isString(rightValue)) {
-//            String result = leftValue.getAsString() + rightValue.getAsString();
-//            return new JsonPrimitive(result);
-//        } else {
-//            throw new EvaluationException("Unsupported inputs for + operation: " + leftValue + " and " + rightValue);
-//        }
-//    }
-//
-//    private JsonElement handleArithmetic(JsonElement leftValue, JsonElement rightValue,
-//                                         BiFunction<Double, Double, Double> operation) {
-//        if (isNumber(leftValue) && isNumber(rightValue)) {
-//            double result = operation.apply(leftValue.getAsDouble(), rightValue.getAsDouble());
-//            return new JsonPrimitive(result);
-//        } else {
-//            throw new EvaluationException("Unsupported inputs for " + operator + " operation: "
-//                    + leftValue + " and " + rightValue);
-//        }
-//    }
 //
 
 //
-//    private JsonElement handleLogical(JsonElement leftValue, JsonElement rightValue,
-//                                      BiFunction<Boolean, Boolean, Boolean> logicOperation) {
-//        if (isBoolean(leftValue) && isBoolean(rightValue)) {
-//            boolean result = logicOperation.apply(leftValue.getAsBoolean(), rightValue.getAsBoolean());
-//            return new JsonPrimitive(result);
-//        } else {
-//            throw new EvaluationException("Unsupported inputs for " + operator.toUpperCase()
-//                    + " operation: " + leftValue + " and " + rightValue);
-//        }
-//    }
+
 //
 //    private boolean equals(JsonElement leftValue, JsonElement rightValue) {
 //        if (isNumber(leftValue) && isNumber(rightValue)) {

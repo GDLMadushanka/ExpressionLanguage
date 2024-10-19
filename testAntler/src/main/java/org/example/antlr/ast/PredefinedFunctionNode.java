@@ -12,16 +12,38 @@ public class PredefinedFunctionNode implements ExpressionNode {
     private String functionName;
     private final List<ExpressionNode> arguments;
 
-    public void setFunctionName(String functionName) {
-        this.functionName = functionName;
-    }
-
-    public PredefinedFunctionNode(ArgumentListNode arguments) {
+    public PredefinedFunctionNode(ArgumentListNode arguments, String functionName) {
         this.arguments = arguments.getArguments();
+        this.functionName = functionName;
     }
 
     @Override
     public ExpressionResult evaluate(EvaluationContext context) {
+        if (arguments.size() == 0) {
+            if (functionName.equals(Constants.NOW)) {
+                return new ExpressionResult(System.currentTimeMillis());
+            }
+        } else if (arguments.size() == 1) {
+            ExpressionResult result = arguments.get(0).evaluate(context);
+            if (functionName.equals(Constants.LENGTH)) {
+                if (result.getType().equals(String.class)) {
+                    return new ExpressionResult(result.asString().length());
+                } else if (result.getType().equals(JsonElement.class)) {
+                    if (result.asJsonElement().isJsonArray()) {
+                        return new ExpressionResult(result.asJsonElement().getAsJsonArray().size());
+                    } else if (result.asJsonElement().isJsonObject()) {
+                        return new ExpressionResult(result.asJsonElement().getAsJsonObject().entrySet().size());
+                    } else if (result.asJsonElement().isJsonPrimitive()) {
+                        return new ExpressionResult(result.asJsonElement().getAsString().length());
+                    } else {
+                        throw new EvaluationException("Invalid argument type for length function");
+                    }
+                } else {
+                    throw new EvaluationException("Invalid argument type for length function");
+                }
+            }
+        }
+
 //        JsonElement result = arguments.get(0).evaluate(context);
 //
 //        if (functionName.equals(Constants.SUM) || functionName.equals(Constants.AVG) ||

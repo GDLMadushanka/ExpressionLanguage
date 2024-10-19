@@ -48,8 +48,8 @@ ASTERISK : '*';
 // Operators
 PLUS: '+';
 MINUS: '-';
-MULT: '*';
 DIV: '/';
+MODULO: '%';
 EQ: '==';
 NEQ: '!=';
 GT: '>';

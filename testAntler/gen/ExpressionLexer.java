@@ -22,7 +22,7 @@ public class ExpressionLexer extends Lexer {
 		STRING=19, BOOLEAN=20, ABS=21, FLOOR=22, CEIL=23, SQRT=24, LOG=25, POW=26, 
 		LENGTH=27, TOUPPER=28, TOLOWER=29, SUBSTRING=30, STARTSWITH=31, ENDSWITH=32, 
 		CONTAINS=33, TRIM=34, REPLACE=35, SPLIT=36, AND=37, OR=38, NOT=39, DOUBLE_DOT=40, 
-		ASTERISK=41, PLUS=42, MINUS=43, MULT=44, DIV=45, EQ=46, NEQ=47, GT=48, 
+		ASTERISK=41, PLUS=42, MINUS=43, DIV=44, MODULO=45, EQ=46, NEQ=47, GT=48, 
 		LT=49, GTE=50, LTE=51, LPAREN=52, RPAREN=53, LBRACKET=54, RBRACKET=55, 
 		DOT=56, COMMA=57, COLON=58, QUOTE=59, BOOLEAN_LITERAL=60, NUMBER=61, STRING_LITERAL=62, 
 		ID=63, GETPROPERTY=64, QUESTION=65, AT=66, WS=67;
@@ -42,7 +42,7 @@ public class ExpressionLexer extends Lexer {
 			"BOOLEAN", "ABS", "FLOOR", "CEIL", "SQRT", "LOG", "POW", "LENGTH", "TOUPPER", 
 			"TOLOWER", "SUBSTRING", "STARTSWITH", "ENDSWITH", "CONTAINS", "TRIM", 
 			"REPLACE", "SPLIT", "AND", "OR", "NOT", "DOUBLE_DOT", "ASTERISK", "PLUS", 
-			"MINUS", "MULT", "DIV", "EQ", "NEQ", "GT", "LT", "GTE", "LTE", "LPAREN", 
+			"MINUS", "DIV", "MODULO", "EQ", "NEQ", "GT", "LT", "GTE", "LTE", "LPAREN", 
 			"RPAREN", "LBRACKET", "RBRACKET", "DOT", "COMMA", "COLON", "QUOTE", "BOOLEAN_LITERAL", 
 			"NUMBER", "STRING_LITERAL", "ESC", "UNICODE_ESC", "OCTAL_ESC", "HEX_DIGIT", 
 			"ID", "GETPROPERTY", "QUESTION", "AT", "WS"
@@ -58,7 +58,7 @@ public class ExpressionLexer extends Lexer {
 			"'string'", "'boolean'", "'abs'", "'floor'", "'ceil'", "'sqrt'", "'log'", 
 			"'pow'", "'length'", "'toUpper'", "'toLower'", "'substring'", "'startsWith'", 
 			"'endsWith'", "'contains'", "'trim'", "'replace'", "'split'", null, null, 
-			null, "'..'", null, "'+'", "'-'", null, "'/'", "'=='", "'!='", "'>'", 
+			null, "'..'", "'*'", "'+'", "'-'", "'/'", "'%'", "'=='", "'!='", "'>'", 
 			"'<'", "'>='", "'<='", "'('", "')'", "'['", "']'", "'.'", "','", "':'", 
 			null, null, null, null, null, "'getProperty'", "'?'", "'@'"
 		};
@@ -72,7 +72,7 @@ public class ExpressionLexer extends Lexer {
 			"BOOLEAN", "ABS", "FLOOR", "CEIL", "SQRT", "LOG", "POW", "LENGTH", "TOUPPER", 
 			"TOLOWER", "SUBSTRING", "STARTSWITH", "ENDSWITH", "CONTAINS", "TRIM", 
 			"REPLACE", "SPLIT", "AND", "OR", "NOT", "DOUBLE_DOT", "ASTERISK", "PLUS", 
-			"MINUS", "MULT", "DIV", "EQ", "NEQ", "GT", "LT", "GTE", "LTE", "LPAREN", 
+			"MINUS", "DIV", "MODULO", "EQ", "NEQ", "GT", "LT", "GTE", "LTE", "LPAREN", 
 			"RPAREN", "LBRACKET", "RBRACKET", "DOT", "COMMA", "COLON", "QUOTE", "BOOLEAN_LITERAL", 
 			"NUMBER", "STRING_LITERAL", "ID", "GETPROPERTY", "QUESTION", "AT", "WS"
 		};
@@ -451,8 +451,8 @@ public class ExpressionLexer extends Lexer {
 		"P\u0001\u0000\u0000\u0000\u01ea\u01eb\u0005*\u0000\u0000\u01ebR\u0001"+
 		"\u0000\u0000\u0000\u01ec\u01ed\u0005+\u0000\u0000\u01edT\u0001\u0000\u0000"+
 		"\u0000\u01ee\u01ef\u0005-\u0000\u0000\u01efV\u0001\u0000\u0000\u0000\u01f0"+
-		"\u01f1\u0005*\u0000\u0000\u01f1X\u0001\u0000\u0000\u0000\u01f2\u01f3\u0005"+
-		"/\u0000\u0000\u01f3Z\u0001\u0000\u0000\u0000\u01f4\u01f5\u0005=\u0000"+
+		"\u01f1\u0005/\u0000\u0000\u01f1X\u0001\u0000\u0000\u0000\u01f2\u01f3\u0005"+
+		"%\u0000\u0000\u01f3Z\u0001\u0000\u0000\u0000\u01f4\u01f5\u0005=\u0000"+
 		"\u0000\u01f5\u01f6\u0005=\u0000\u0000\u01f6\\\u0001\u0000\u0000\u0000"+
 		"\u01f7\u01f8\u0005!\u0000\u0000\u01f8\u01f9\u0005=\u0000\u0000\u01f9^"+
 		"\u0001\u0000\u0000\u0000\u01fa\u01fb\u0005>\u0000\u0000\u01fb`\u0001\u0000"+

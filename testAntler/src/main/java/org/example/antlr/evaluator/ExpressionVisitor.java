@@ -4,6 +4,7 @@ import com.example.antlr.ExpressionParser;
 import com.example.antlr.ExpressionParserBaseVisitor;
 import com.example.antlr.ExpressionParserVisitor;
 import org.example.antlr.ast.*;
+import org.example.antlr.constants.Constants;
 
 import java.util.logging.Logger;
 
@@ -26,7 +27,7 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
                 ExpressionNode left = visit(ctx.logicalExpression().get(0));
                 for (int i = 1; i < ctx.logicalExpression().size(); i++) {
                     ExpressionNode right = visit(ctx.logicalExpression(i));
-                    left = new BinaryOperationNode(left, ctx.getChild(i).getText(), right);
+                    left = new BinaryOperationNode(left, ctx.getChild(2 * i - 1).getText(), right);
                 }
                 return left;
             }
@@ -36,169 +37,88 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
 
     @Override
     public ExpressionNode visitLogicalExpression(ExpressionParser.LogicalExpressionContext ctx) {
-        if(ctx.arithmeticExpression()!=null){
-            return visitArithmeticExpression(ctx.arithmeticExpression());
+        if (ctx.arithmeticExpression() != null) {
+            ExpressionNode left = visit(ctx.arithmeticExpression());
+            if (ctx.logicalExpression() != null && ctx.getChild(1) != null) {
+                ExpressionNode right = visit(ctx.logicalExpression());
+                left = new BinaryOperationNode(left, ctx.getChild(1).getText(), right);
+            }
+            return left;
         }
         return null;
     }
 
-    @Override public ExpressionNode visitArithmeticExpression(ExpressionParser.ArithmeticExpressionContext ctx)
-    { return ctx.term() != null ? visit(ctx.term(0)) : null; }
+    @Override
+    public ExpressionNode visitArithmeticExpression(ExpressionParser.ArithmeticExpressionContext ctx) {
+        if (ctx.term() != null) {
+            if (ctx.term().size() == 1) {
+                return visit(ctx.term().get(0));
+            } else {
+                ExpressionNode left = visit(ctx.term().get(0));
+                for (int i = 1; i < ctx.term().size(); i++) {
+                    ExpressionNode right = visit(ctx.term(i));
+                    left = new BinaryOperationNode(left, ctx.getChild(2 * i - 1).getText(), right);
+                }
+                return left;
+            }
+        }
+        return null;
+    }
 
     @Override
-    public ExpressionNode visitTerm(ExpressionParser.TermContext ctx)
-    { return ctx.factor() != null ? visit(ctx.factor(0)) : null; }
+    public ExpressionNode visitTerm(ExpressionParser.TermContext ctx) {
+        if (ctx.factor() != null) {
+            if (ctx.factor().size() == 1) {
+                return visit(ctx.factor().get(0));
+            } else {
+                ExpressionNode left = visit(ctx.factor().get(0));
+                for (int i = 1; i < ctx.factor().size(); i++) {
+                    ExpressionNode right = visit(ctx.factor(i));
+                    left = new BinaryOperationNode(left, ctx.getChild(2 * i - 1).getText(), right);
+                }
+                return left;
+            }
+        }
+        return null;
+    }
 
     @Override
-    public ExpressionNode visitFactor(ExpressionParser.FactorContext ctx)
-    { return ctx.literal() != null ? visit(ctx.literal()) : null; }
+    public ExpressionNode visitFactor(ExpressionParser.FactorContext ctx) {
+        if (ctx.literal() != null) {
+            return visit(ctx.literal());
+        } else if (ctx.functionCall() != null) {
+            return visit(ctx.functionCall());
+        }
+        return null;
+    }
 
     @Override
-    public ExpressionNode visitLiteral(ExpressionParser.LiteralContext ctx)
-    {
+    public ExpressionNode visitFunctionCall(ExpressionParser.FunctionCallContext ctx) {
+        ArgumentListNode parameterList = new ArgumentListNode();
+        if (ctx.expression() != null) {
+            for (ExpressionParser.ExpressionContext expressionContext : ctx.expression()) {
+                parameterList.addArgument(visit(expressionContext));
+            }
+        }
+        if (ctx.LENGTH() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.LENGTH);
+        }
+        return null;
+    }
+
+    @Override
+    public ExpressionNode visitLiteral(ExpressionParser.LiteralContext ctx) {
         if (ctx.NUMBER() != null) {
             return new LiteralNode(ctx.NUMBER().getText(), 0);
         } else if (ctx.BOOLEAN_LITERAL() != null) {
-            return new LiteralNode(ctx.BOOLEAN_LITERAL().getText(), 1);
+            return new LiteralNode(ctx.BOOLEAN_LITERAL().getText(), 2);
         } else if (ctx.STRING_LITERAL() != null) {
-            return new LiteralNode(ctx.STRING_LITERAL().getText(), 2);
+            return new LiteralNode(ctx.STRING_LITERAL().getText(), 1);
         }
         return null;
     }
 
-//
-//    @Override
-//    public ExpressionNode visitConditionalExpression(ExpressionLanguageParser.ConditionalExpressionContext ctx) {
-//        System.out.println("Visiting conditional expression: " + ctx.getText());
-//        // Example logic: create a new BinaryOperationNode for the conditional expression
-//        ExpressionNode condition = visit(ctx.expression(0));
-//        ExpressionNode trueExpr = visit(ctx.expression(1));
-//        ExpressionNode falseExpr = visit(ctx.expression(2));
-//        return new IfElseConditionNode(condition, trueExpr, falseExpr);
-//    }
-//
-//    @Override
-//    public ExpressionNode visitLogicalOrExpression(ExpressionLanguageParser.LogicalOrExpressionContext ctx) {
-//        System.out.println("Visiting logical or expression: " + ctx.getText());
-//        if (ctx.logicalAndExpression().size() == 1) {
-//            return visit(ctx.logicalAndExpression(0));
-//        }
-//
-//        // Start by visiting the first logicalAndExpression
-//        ExpressionNode left = visit(ctx.logicalAndExpression(0));
-//
-//        // Iterate over the remaining logicalAndExpressions and OR operators
-//        for (int i = 1; i < ctx.logicalAndExpression().size(); i++) {
-//            ExpressionNode right = visit(ctx.logicalAndExpression(i));
-//            left = new BinaryOperationNode(left, Constants.OR, right);
-//        }
-//        return left;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitLogicalAndExpression(ExpressionLanguageParser.LogicalAndExpressionContext ctx) {
-//        System.out.println("Visiting logical AND expression: " + ctx.getText());
-//        if (ctx.equalityExpression().size() == 1) {
-//            return visit(ctx.equalityExpression(0));
-//        }
-//        ExpressionNode left = visit(ctx.equalityExpression(0));
-//        for (int i = 1; i < ctx.equalityExpression().size(); i++) {
-//            ExpressionNode right = visit(ctx.equalityExpression(i));
-//            left = new BinaryOperationNode(left, Constants.AND, right);
-//        }
-//        return left;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitEqualityExpression(ExpressionLanguageParser.EqualityExpressionContext ctx) {
-//        System.out.println("Visiting equality expression: " + ctx.getText());
-//        if (ctx.relationalExpression().size() == 1) {
-//            return visit(ctx.relationalExpression(0));
-//        }
-//        ExpressionNode left = visit(ctx.relationalExpression(0));
-//        for (int i = 1; i < ctx.relationalExpression().size(); i++) {
-//            if (ctx.getChild(2 * i - 1) != null) {
-//                String operator = ctx.getChild(2 * i - 1).getText();
-//                ExpressionNode right = visit(ctx.relationalExpression(i));
-//                left = new BinaryOperationNode(left, operator, right);
-//            } else {
-//                // handle error
-//                return null;
-//            }
-//        }
-//        return left;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitRelationalExpression(ExpressionLanguageParser.RelationalExpressionContext ctx) {
-//        System.out.println("Visiting relational expression: " + ctx.getText());
-//        if (ctx.additiveExpression().size() == 1) {
-//            return visit(ctx.additiveExpression(0));
-//        }
-//        ExpressionNode left = visit(ctx.additiveExpression(0));
-//        for (int i = 1; i < ctx.additiveExpression().size(); i++) {
-//            if (ctx.getChild(2 * i - 1) != null) {
-//                String operator = ctx.getChild(2 * i - 1).getText();
-//                ExpressionNode right = visit(ctx.additiveExpression(i));
-//                left = new BinaryOperationNode(left, operator, right);
-//            } else {
-//                // handle error
-//                return null;
-//            }
-//        }
-//        return left;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitAdditiveExpression(ExpressionLanguageParser.AdditiveExpressionContext ctx) {
-//        System.out.println("Visiting additive expression: " + ctx.getText());
-//        if (ctx.multiplicativeExpression().size() == 1) {
-//            return visit(ctx.multiplicativeExpression(0));
-//        }
-//        ExpressionNode left = visit(ctx.multiplicativeExpression(0));
-//        for (int i = 1; i < ctx.multiplicativeExpression().size(); i++) {
-//            if (ctx.getChild(2 * i - 1) != null) {
-//                String operator = ctx.getChild(2 * i - 1).getText();
-//                ExpressionNode right = visit(ctx.multiplicativeExpression(i));
-//                left = new BinaryOperationNode(left, operator, right);
-//            } else {
-//                // handle error
-//                return null;
-//            }
-//        }
-//        return left;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitMultiplicativeExpression(ExpressionLanguageParser.MultiplicativeExpressionContext ctx) {
-//        System.out.println("Visiting equality expression: " + ctx.getText());
-//        if (ctx.unaryExpression().size() == 1) {
-//            return visit(ctx.unaryExpression(0));
-//        }
-//        ExpressionNode left = visit(ctx.unaryExpression(0));
-//        for (int i = 1; i < ctx.unaryExpression().size(); i++) {
-//            if (ctx.getChild(2 * i - 1) != null) {
-//                String operator = ctx.getChild(2 * i - 1).getText();
-//                ExpressionNode right = visit(ctx.unaryExpression(i));
-//                left = new BinaryOperationNode(left, operator, right);
-//            } else {
-//                // handle error
-//                return null;
-//            }
-//        }
-//        return left;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitUnaryExpression(ExpressionLanguageParser.UnaryExpressionContext ctx) {
-//        System.out.println("Visiting unary expression: " + ctx.getText());
-//        if (ctx.NOT() != null) {
-//            ExpressionNode right = visit(ctx.unaryExpression());
-//            return new UnaryOperationNode(right, true);
-//        } else {
-//            return visit(ctx.memberExpression());
-//        }
-//    }
+
 //
 //    @Override
 //    public ExpressionNode visitMemberExpression(ExpressionLanguageParser.MemberExpressionContext ctx) {
