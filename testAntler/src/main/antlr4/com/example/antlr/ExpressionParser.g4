@@ -34,7 +34,8 @@ factor
     ;
 
 literal
-    : BOOLEAN_LITERAL
+    : arrayLiteral
+    | BOOLEAN_LITERAL
     | NUMBER
     | STRING_LITERAL
     ;
@@ -43,6 +44,9 @@ variableAccess
     : VAR (DOT ID | LBRACKET arrayIndex RBRACKET)+
     ;
 
+arrayLiteral
+    : LBRACKET (expression (COMMA expression)*)? RBRACKET // Array with zero or more literals, separated by commas
+    ;
 
 payloadAccess
     : PAYLOAD ( (DOUBLE_DOT ASTERISK | DOUBLE_DOT ID | DOT ID | LBRACKET arrayIndex RBRACKET | DOT ASTERISK)*

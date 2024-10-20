@@ -1,21 +1,31 @@
 package org.example.antlr.ast;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import org.example.antlr.context.EvaluationContext;
 
 public class LiteralNode implements ExpressionNode {
     private final String value;
+    private ArgumentListNode parameterList = new ArgumentListNode();
 
     /*
         0: number
         1: string
         2: boolean
         3: null
+        4: array
      */
     private final int type;
 
     public LiteralNode(String value, int type) {
         this.value = value;
         this.type = type;
+    }
+
+    public LiteralNode(ArgumentListNode value, int type) {
+        this.parameterList = value;
+        this.type = type;
+        this.value = "";
     }
 
     @Override
@@ -41,6 +51,21 @@ public class LiteralNode implements ExpressionNode {
                 return new ExpressionResult(Boolean.parseBoolean(value));
             case 3:
                 return new ExpressionResult();
+            case 4:
+                JsonArray jsonArray = new JsonArray();
+                for (ExpressionNode expressionNode : parameterList.getArguments()) {
+                    ExpressionResult result = expressionNode.evaluate(context);
+                    if (result.getType().equals(JsonElement.class)) {
+                        jsonArray.add(result.asJsonElement());
+                    } else if (result.getType().equals(Integer.class)) {
+                        jsonArray.add(result.asInt());
+                    } else if (result.getType().equals(Double.class)) {
+                        jsonArray.add(result.asDouble());
+                    } else {
+                        jsonArray.add(result.asString());
+                    }
+                }
+                return new ExpressionResult(jsonArray);
         }
         return null;
     }

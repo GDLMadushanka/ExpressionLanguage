@@ -3,9 +3,14 @@ package org.example.antlr.evaluator;
 import com.example.antlr.ExpressionParser;
 import com.example.antlr.ExpressionParserBaseVisitor;
 import com.example.antlr.ExpressionParserVisitor;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.example.antlr.ast.*;
 import org.example.antlr.constants.Constants;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNode>
@@ -88,6 +93,12 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             return visit(ctx.literal());
         } else if (ctx.functionCall() != null) {
             return visit(ctx.functionCall());
+        } else if (ctx.expression() != null) {
+            return visit(ctx.expression());
+        } else if (ctx.payloadAccess() != null) {
+            return visit(ctx.payloadAccess());
+        } else if (ctx.variableAccess() != null) {
+            return visit(ctx.variableAccess());
         }
         return null;
     }
@@ -102,6 +113,10 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
         }
         if (ctx.LENGTH() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.LENGTH);
+        } else if (ctx.TOUPPER() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.TO_UPPER);
+        } else if (ctx.TOLOWER() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.TO_LOWER);
         }
         return null;
     }
@@ -114,242 +129,76 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             return new LiteralNode(ctx.BOOLEAN_LITERAL().getText(), 2);
         } else if (ctx.STRING_LITERAL() != null) {
             return new LiteralNode(ctx.STRING_LITERAL().getText(), 1);
+        } else if (ctx.arrayLiteral() != null) {
+            return visit(ctx.arrayLiteral());
         }
         return null;
     }
 
+    @Override
+    public ExpressionNode visitArrayLiteral(ExpressionParser.ArrayLiteralContext ctx) {
+        if (ctx.expression() != null) {
+            ArgumentListNode parameterList = new ArgumentListNode();
+            for (ExpressionParser.ExpressionContext expressionContext : ctx.expression()) {
+                parameterList.addArgument(visit(expressionContext));
+            }
+            return new LiteralNode(parameterList, 4);
+        }
+        return null;
+    }
 
-//
+    @Override
+    public ExpressionNode visitVariableAccess(ExpressionParser.VariableAccessContext ctx) {
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public ExpressionNode visitPayloadAccess(ExpressionParser.PayloadAccessContext ctx) {
+        Map<String, ExpressionNode> expressionNodeMap = new HashMap<>();
+        if (ctx.arrayIndex() != null) {
+            for (ExpressionParser.ArrayIndexContext expressionContext : ctx.arrayIndex()) {
+                expressionNodeMap.put(expressionContext.getText(), visit(expressionContext));
+            }
+        }
+        return new PayloadAccessNode(ctx.getText(), expressionNodeMap);
+    }
+
+    @Override
+    public ExpressionNode visitArrayIndex(ExpressionParser.ArrayIndexContext ctx) {
+        if (ctx.NUMBER() != null) {
+            return new LiteralNode(ctx.NUMBER().getText(), 0);
+        } else if (ctx.STRING_LITERAL() != null) {
+            return new LiteralNode(ctx.STRING_LITERAL().getText(), 1);
+        } else if (ctx.expression() != null) {
+            if (ctx.expression().size() == 1) {
+                return visit(ctx.expression(0));
+            }
+        }
+        return visitChildren(ctx);
+    }
+
+    @Override
+    public ExpressionNode visitMultipleArrayIndices(ExpressionParser.MultipleArrayIndicesContext ctx) {
+        if (ctx.expression() != null) {
+            ArgumentListNode expressionNodes = new ArgumentListNode();
+            for (ExpressionParser.ExpressionContext expressionContext : ctx.expression()) {
+                expressionNodes.addArgument(visit(expressionContext));
+            }
+            return new ArrayIndexNode(expressionNodes, ',');
+        }
+        return null;
+    }
+
 //    @Override
-//    public ExpressionNode visitMemberExpression(ExpressionLanguageParser.MemberExpressionContext ctx) {
-//        System.out.println("Visiting member expression: " + ctx.getText());
-//        ExpressionNode node = visit(ctx.primary());
-//        for (ExpressionLanguageParser.MemberAccessContext memberAccessCtx : ctx.memberAccess()) {
-//            if (memberAccessCtx.DOT() != null) {
-//                // Handle property access or method call
-//                if (memberAccessCtx.IDENTIFIER() != null) {
-//                    // Property access: node.property
-////                    String propertyName = memberAccessCtx.IDENTIFIER().getText();
-////                    node = new PropertyAccessNode(node, propertyName);
-//                } else if (memberAccessCtx.methodCall() != null) {
-//                    PredefinedMethodCallNode methodCallNode = (PredefinedMethodCallNode) visit(memberAccessCtx.methodCall());
-//                    methodCallNode.setTarget(node);
-//                    return methodCallNode;
-//                } else {
-//                    throw new RuntimeException("Unexpected member access with DOT but no IDENTIFIER or methodCall");
-//                }
-////            } else if (memberAccessCtx.LBRACKET() != null) {
-////                // Handle indexing: node[expression]
-////                ExpressionNode indexExpression = visit(memberAccessCtx.expression());
-////                node = new IndexAccessNode(node, indexExpression);
-////            } else {
-////                throw new RuntimeException("Unexpected member access without DOT or LBRACKET");
-////            }
+//    public ExpressionNode visitSliceArrayIndex(ExpressionParser.SliceArrayIndexContext ctx) {
+//        if (ctx.signedExpressions() != null) {
+//            ArgumentListNode expressionNodes = new ArgumentListNode();
+//            for (ExpressionParser.SignedExpressionsContext expressionContext : ctx.signedExpressions()) {
+//                expressionNodes.addArgument(visit(expressionContext));
 //            }
-//        }
-//        // Step 3: Return the final expression node
-//        return node;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitMethodCall(ExpressionLanguageParser.MethodCallContext ctx) {
-//        System.out.println("Visiting method call : " + ctx.getText());
-//        if (ctx.predefinedMethodCall() != null) {
-//            return visit(ctx.predefinedMethodCall());
+//            return new ArrayIndexNode(expressionNodes, ',');
 //        }
 //        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitPredefinedMethodCall(ExpressionLanguageParser.PredefinedMethodCallContext ctx) {
-//        System.out.println("Visiting predefined method call: " + ctx.getText());
-//        if (ctx.stringMethodCall() != null) {
-//            return visit(ctx.stringMethodCall());
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitStringMethodCall(ExpressionLanguageParser.StringMethodCallContext ctx) {
-//        System.out.println("Visiting string method call: " + ctx.getText());
-//        ArgumentListNode parameterList = new ArgumentListNode();
-//        if (ctx.argumentList() != null) {
-//            parameterList = (ArgumentListNode) visit(ctx.argumentList());
-//        }
-//        PredefinedMethodCallNode methodCallNode = new PredefinedMethodCallNode(parameterList);
-//        methodCallNode.setMethodType(0);
-//        if (ctx.TO_UPPER() != null) {
-//            methodCallNode.setMethodName(Constants.TO_UPPER);
-//        } else if (ctx.TO_LOWER() != null) {
-//            methodCallNode.setMethodName(Constants.TO_LOWER);
-//        } else if (ctx.LENGTH() != null) {
-//            methodCallNode.setMethodName(Constants.LENGTH);
-//        } else if (ctx.SUBSTRING() != null) {
-//            methodCallNode.setMethodName(Constants.SUBSTRING);
-//        } else if (ctx.STARTS_WITH() != null){
-//            methodCallNode.setMethodName(Constants.STARTS_WITH);
-//        } else if (ctx.ENDS_WITH() != null){
-//            methodCallNode.setMethodName(Constants.ENDS_WITH);
-//        } else if (ctx.CONTAINS() != null){
-//            methodCallNode.setMethodName(Constants.CONTAINS);
-//        } else if (ctx.TRIM() != null){
-//            methodCallNode.setMethodName(Constants.TRIM);
-//        } else if (ctx.REPLACE() != null){
-//            methodCallNode.setMethodName(Constants.REPLACE);
-//        } else if (ctx.SPLIT() != null){
-//            methodCallNode.setMethodName(Constants.SPLIT);
-//        }
-//        return methodCallNode;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitPrimary(ExpressionLanguageParser.PrimaryContext ctx) {
-//        System.out.println("Visiting primary: " + ctx.getText());
-//        if (ctx.literal() != null) {
-//            return visit(ctx.literal());
-//        } else if (ctx.variableReference() != null) {
-//            return visit(ctx.variableReference());
-//        } else if (ctx.mathConstant() != null) {
-//            return visit(ctx.mathConstant());
-//        } else if (ctx.LPAREN() != null) {
-//            return visit(ctx.expression());
-//        } else if (ctx.functionCall() != null) {
-//            return visit(ctx.functionCall());
-//        } else {
-//            throw new RuntimeException("Unsupported primary expression: " + ctx.getText());
-//        }
-//    }
-//
-//    @Override
-//    public ExpressionNode visitFunctionCall(ExpressionLanguageParser.FunctionCallContext ctx) {
-//        System.out.println("Visiting function call: " + ctx.getText());
-//        if (ctx.predefinedFunctionCall() != null) {
-//            return visit(ctx.predefinedFunctionCall());
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitPredefinedFunctionCall(ExpressionLanguageParser.PredefinedFunctionCallContext ctx) {
-//        System.out.println("Visiting predefined function call: " + ctx.getText());
-//        if (ctx.mathFunctionCall() != null) {
-//            return visit(ctx.mathFunctionCall());
-//        } else if (ctx.conversionFunctionCall() != null) {
-//            return visit(ctx.conversionFunctionCall());
-//        } else if (ctx.dateFunctionCall() != null) {
-//            return visit(ctx.dateFunctionCall());
-//        } else if (ctx.typeCheckFunctionCall() != null) {
-//            return visit(ctx.typeCheckFunctionCall());
-//        } else if (ctx.registryFunctionCall() != null) {
-//            return visit(ctx.registryFunctionCall());
-//        } else if (ctx.secretFunctionCall() != null) {
-//            return visit(ctx.secretFunctionCall());
-//        } else if (ctx.encodingFunctionCall() != null) {
-//            return visit(ctx.encodingFunctionCall());
-//        } else if (ctx.jsonFunctionCall() != null) {
-//            return visit(ctx.jsonFunctionCall());
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitMathFunctionCall(ExpressionLanguageParser.MathFunctionCallContext ctx) {
-//        System.out.println("Visiting math function call: " + ctx.getText());
-//        if (ctx.argumentList() != null) {
-//            PredefinedFunctionNode methodCallNode = new PredefinedFunctionNode((ArgumentListNode) visit(ctx.argumentList()));
-//            if (ctx.ABS() != null) {
-//                methodCallNode.setFunctionName(Constants.ABS);
-//            } else if (ctx.CEIL() != null) {
-//                methodCallNode.setFunctionName(Constants.CEIL);
-//            } else if (ctx.FLOOR() != null) {
-//                methodCallNode.setFunctionName(Constants.FLOOR);
-//            } else if (ctx.MAX() != null) {
-//                methodCallNode.setFunctionName(Constants.MAX);
-//            } else if (ctx.MIN() != null) {
-//                methodCallNode.setFunctionName(Constants.MIN);
-//            } else if (ctx.POW() != null) {
-//                methodCallNode.setFunctionName(Constants.POW);
-//            } else if (ctx.LOG() != null) {
-//                methodCallNode.setFunctionName(Constants.LOGARITHM);
-//            } else if (ctx.SQRT() != null) {
-//                methodCallNode.setFunctionName(Constants.SQRT);
-//            } else if (ctx.SUM() != null) {
-//                methodCallNode.setFunctionName(Constants.SUM);
-//            } else if (ctx.AVERAGE() != null) {
-//                methodCallNode.setFunctionName(Constants.AVG);
-//            }
-//            return methodCallNode;
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitArgumentList(ExpressionLanguageParser.ArgumentListContext ctx) {
-//        System.out.println("Visiting argument list: " + ctx.getText());
-//        ArgumentListNode argumentListNode = new ArgumentListNode();
-//        for (ExpressionLanguageParser.ExpressionContext context : ctx.expression()) {
-//            argumentListNode.addArgument(visit(context));
-//        }
-//        return argumentListNode;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitMathConstant(ExpressionLanguageParser.MathConstantContext ctx) {
-//        System.out.println("Visiting math constant: " + ctx.getText());
-//        if (!StringUtils.isEmpty(ctx.getText())) {
-//            return new ConstantsNode(ctx.getText());
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitLiteral(ExpressionLanguageParser.LiteralContext ctx) {
-//        System.out.println("Visiting literal: " + ctx.getText());
-//        if (!StringUtils.isEmpty(ctx.getText())) {
-//            if (ctx.STRING() != null) {
-//                return new LiteralNode(ctx.STRING().getText(), 1);
-//            } else if (ctx.NUMBER() != null) {
-//                return new LiteralNode(ctx.NUMBER().getText(), 0);
-//            } else if (ctx.TRUE() != null) {
-//                return new LiteralNode(ctx.TRUE().getText(), 2);
-//            } else if (ctx.FALSE() != null) {
-//                return new LiteralNode(ctx.FALSE().getText(), 2);
-//            } else if (ctx.NULL() != null) {
-//                return new LiteralNode(ctx.NULL().getText(), 3);
-//            }
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public ExpressionNode visitMemberAccess(ExpressionLanguageParser.MemberAccessContext ctx) {
-//        System.out.println("Visiting member access: " + ctx.getText());
-//
-//        if (ctx.DOT() != null) {
-//            if (ctx.IDENTIFIER() != null) {
-//                String propertyName = ctx.IDENTIFIER().getText();
-//                return null;
-//            } else if (ctx.methodCall() != null) {
-//                return visit(ctx.methodCall());
-//            } else {
-//                throw new RuntimeException("Unexpected member access with DOT but no IDENTIFIER or methodCall");
-//            }
-//        } else if (ctx.LBRACKET() != null) {
-//            ExpressionNode indexExpression = visit(ctx.expression());
-//            return null;
-//        } else {
-//            throw new RuntimeException("Unexpected member access without DOT or LBRACKET");
-//        }
-//    }
-//
-//    @Override
-//    public ExpressionNode visitArrayLiteral(ExpressionLanguageParser.ArrayLiteralContext ctx) {
-//        System.out.println("Visiting array literal: " + ctx.getText());
-//        ArrayLiteralNode arrayLiteralNode = new ArrayLiteralNode();
-//        for (ExpressionLanguageParser.ExpressionContext context : ctx.expression()) {
-//            arrayLiteralNode.addElement(visit(context));
-//        }
-//        return arrayLiteralNode;
 //    }
 
     @Override

@@ -12,7 +12,11 @@ import org.example.antlr.evaluator.ExpressionVisitor;
 import org.example.antlr.exception.SyntaxErrorListener;
 
 public class TestUtils {
-    public static String evaluateExpression(String expression) {
+
+    private static String PAYLOAD1 = "{\"name\":\"John\",\"age\":30,\"cars\":[ \"Ford\", " +
+            "\"BMW\", \"Fiat\", \"Honda\", \"Lexus\", \"KIA\" ],\"index\":1}";
+
+    public static String evaluateExpressionWithPayload(String expression, int payloadId) {
         CharStream input = CharStreams.fromString(expression);
         ExpressionLexer lexer = new ExpressionLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -27,7 +31,14 @@ public class TestUtils {
         ExpressionNode expressionNode = visitor.visit(tree);
 
         EvaluationContext context = new EvaluationContext();
+        if (payloadId == 1) {
+            context.setPayload(PAYLOAD1);
+        }
         ExpressionResult result = expressionNode.evaluate(context);
         return result.asString();
+    }
+
+    public static String evaluateExpression(String expression) {
+        return evaluateExpressionWithPayload(expression, 0);
     }
 }

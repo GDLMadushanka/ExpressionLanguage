@@ -15,4 +15,6 @@ public class Constants {
     public static final String  REPLACE = "replace";
     public static final String  SPLIT = "split";
     public static final String  NOW = "now";
+    public static final String  PAYLOAD = "payload";
+    public static final String  PAYLOAD_$ = "$";
 }

@@ -1,5 +1,6 @@
 package org.example.antlr.ast;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import org.example.antlr.constants.Constants;
@@ -28,18 +29,34 @@ public class PredefinedFunctionNode implements ExpressionNode {
             if (functionName.equals(Constants.LENGTH)) {
                 if (result.getType().equals(String.class)) {
                     return new ExpressionResult(result.asString().length());
-                } else if (result.getType().equals(JsonElement.class)) {
-                    if (result.asJsonElement().isJsonArray()) {
-                        return new ExpressionResult(result.asJsonElement().getAsJsonArray().size());
-                    } else if (result.asJsonElement().isJsonObject()) {
-                        return new ExpressionResult(result.asJsonElement().getAsJsonObject().entrySet().size());
-                    } else if (result.asJsonElement().isJsonPrimitive()) {
-                        return new ExpressionResult(result.asJsonElement().getAsString().length());
-                    } else {
-                        throw new EvaluationException("Invalid argument type for length function");
-                    }
+                } else if (result.getType().equals(JsonArray.class)) {
+                    return new ExpressionResult(result.asJsonElement().getAsJsonArray().size());
                 } else {
                     throw new EvaluationException("Invalid argument type for length function");
+                }
+            } else if (functionName.equals(Constants.TO_LOWER)) {
+                if (result.getType().equals(String.class)) {
+                    return new ExpressionResult(result.asString().toLowerCase());
+                } else if (result.getType().equals(JsonElement.class)) {
+                    if (result.asJsonElement().isJsonPrimitive()) {
+                        return new ExpressionResult(new JsonPrimitive(result.asJsonElement().getAsString().toLowerCase()));
+                    } else {
+                        throw new EvaluationException("Invalid argument type for toLower function");
+                    }
+                } else {
+                    throw new EvaluationException("Invalid argument type for toLower function");
+                }
+            } else if (functionName.equals(Constants.TO_UPPER)) {
+                if (result.getType().equals(String.class)) {
+                    return new ExpressionResult(result.asString().toUpperCase());
+                } else if (result.getType().equals(JsonElement.class)) {
+                    if (result.asJsonElement().isJsonPrimitive()) {
+                        return new ExpressionResult(new JsonPrimitive(result.asJsonElement().getAsString().toUpperCase()));
+                    } else {
+                        throw new EvaluationException("Invalid argument type for toUpper function");
+                    }
+                } else {
+                    throw new EvaluationException("Invalid argument type for toUpper function");
                 }
             }
         }
