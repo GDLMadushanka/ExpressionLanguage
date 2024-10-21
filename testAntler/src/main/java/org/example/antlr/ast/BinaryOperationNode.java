@@ -1,12 +1,10 @@
 package org.example.antlr.ast;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import org.example.antlr.context.EvaluationContext;
 import org.example.antlr.exception.EvaluationException;
 
 import java.util.function.BiFunction;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BinaryOperationNode implements ExpressionNode {
@@ -90,11 +88,36 @@ public class BinaryOperationNode implements ExpressionNode {
             return new ExpressionResult(leftValue.asInt() + rightValue.asInt());
         } else if (leftValue.getType().equals(String.class) || rightValue.getType().equals(String.class)) {
             return new ExpressionResult(leftValue.asString().concat(rightValue.asString()));
+        } else if (leftValue.getType().equals(JsonPrimitive.class) || rightValue.getType().equals(JsonPrimitive.class)) {
+            Number leftNum = getAsNumber(leftValue);
+            Number rightNum = getAsNumber(rightValue);
+            if (leftNum != null && rightNum != null) {
+                if (leftNum instanceof Double || rightNum instanceof Double) {
+                    return new ExpressionResult(leftNum.doubleValue() + rightNum.doubleValue());
+                } else {
+                    return new ExpressionResult(leftNum.intValue() + rightNum.intValue());
+                }
+            } else {
+                throw new EvaluationException("Unsupported inputs for + operation: " + leftValue + " and " + rightValue);
+            }
         } else {
             throw new EvaluationException("Unsupported inputs for + operation: " + leftValue + " and " + rightValue);
         }
     }
 
+    private Number getAsNumber(ExpressionResult value) {
+        if (value.getType().equals(JsonPrimitive.class)) {
+            JsonPrimitive primitive = value.asJsonElement().getAsJsonPrimitive();
+            if (primitive.isNumber()) {
+                return primitive.getAsNumber();
+            }
+        } else if (value.getType().equals(Integer.class)) {
+            return value.asInt();
+        } else if (value.getType().equals(Double.class)) {
+            return value.asDouble();
+        }
+        return null;
+    }
     private ExpressionResult handleArithmetic(ExpressionResult leftValue, ExpressionResult rightValue,
                                          String operator) {
         boolean isDouble = leftValue.getType().equals(Double.class) || rightValue.getType().equals(Double.class);

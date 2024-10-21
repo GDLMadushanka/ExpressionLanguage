@@ -41,7 +41,8 @@ literal
     ;
 
 variableAccess
-    : VAR (DOT ID | LBRACKET arrayIndex RBRACKET)+
+    : VAR ( (DOUBLE_DOT ASTERISK | DOUBLE_DOT ID | DOT ID | LBRACKET arrayIndex RBRACKET | DOT ASTERISK)*
+               | DOUBLE_DOT ID (LBRACKET arrayIndex RBRACKET)? )
     ;
 
 arrayLiteral
@@ -61,7 +62,6 @@ arrayIndex
     | multipleArrayIndices
     | sliceArrayIndex
     | expression ( (PLUS | MINUS | MULT | DIV ) expression)*
-    | COLON expression
     | ASTERISK
     | QUESTION filterExpression
     ;

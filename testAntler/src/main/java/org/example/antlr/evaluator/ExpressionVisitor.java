@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Filter;
 import java.util.logging.Logger;
 
 public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNode>
@@ -149,7 +150,13 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
 
     @Override
     public ExpressionNode visitVariableAccess(ExpressionParser.VariableAccessContext ctx) {
-        return visitChildren(ctx);
+        Map<String, ExpressionNode> expressionNodeMap = new HashMap<>();
+        if (ctx.arrayIndex() != null) {
+            for (ExpressionParser.ArrayIndexContext expressionContext : ctx.arrayIndex()) {
+                expressionNodeMap.put(expressionContext.getText(), visit(expressionContext));
+            }
+        }
+        return new PayloadAccessNode(ctx.getText(), expressionNodeMap,true);
     }
 
     @Override
@@ -160,7 +167,7 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
                 expressionNodeMap.put(expressionContext.getText(), visit(expressionContext));
             }
         }
-        return new PayloadAccessNode(ctx.getText(), expressionNodeMap);
+        return new PayloadAccessNode(ctx.getText(), expressionNodeMap,false);
     }
 
     @Override
@@ -173,6 +180,8 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             if (ctx.expression().size() == 1) {
                 return visit(ctx.expression(0));
             }
+        } else if (ctx.ASTERISK() != null) {
+            return null;
         }
         return visitChildren(ctx);
     }
@@ -189,17 +198,58 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
         return null;
     }
 
-//    @Override
-//    public ExpressionNode visitSliceArrayIndex(ExpressionParser.SliceArrayIndexContext ctx) {
-//        if (ctx.signedExpressions() != null) {
-//            ArgumentListNode expressionNodes = new ArgumentListNode();
-//            for (ExpressionParser.SignedExpressionsContext expressionContext : ctx.signedExpressions()) {
-//                expressionNodes.addArgument(visit(expressionContext));
-//            }
-//            return new ArrayIndexNode(expressionNodes, ',');
-//        }
-//        return null;
-//    }
+    @Override
+    public ExpressionNode visitSliceArrayIndex(ExpressionParser.SliceArrayIndexContext ctx) {
+        if (ctx.signedExpressions() != null) {
+            ArgumentListNode expressionNodes = new ArgumentListNode();
+            if (ctx.getChildCount() == 2 && ctx.getChild(0).getText().equals(":")) {
+                expressionNodes.addArgument(null);
+            }
+            for (ExpressionParser.SignedExpressionsContext expressionContext : ctx.signedExpressions()) {
+                expressionNodes.addArgument(visit(expressionContext));
+            }
+            if (ctx.getChildCount() == 2 && ctx.getChild(1).getText().equals(":")) {
+                expressionNodes.addArgument(null);
+            }
+            return new ArrayIndexNode(expressionNodes, ':');
+        }
+        return null;
+    }
+
+    @Override
+    public ExpressionNode visitSignedExpressions(ExpressionParser.SignedExpressionsContext ctx) {
+        if (ctx.expression() != null) {
+            if (ctx.MINUS() != null) {
+                return new SignedExpressionNode(visit(ctx.expression()), true);
+            } else {
+                return visit(ctx.expression());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ExpressionNode visitFilterExpression(ExpressionParser.FilterExpressionContext ctx) {
+        Map<String, ExpressionNode> expressionNodeMap = new HashMap<>();
+        if (ctx.filterComponent() != null) {
+            for (ExpressionParser.FilterComponentContext filterExpressionContext : ctx.filterComponent()) {
+                expressionNodeMap.put(filterExpressionContext.getText(), visit(filterExpressionContext));
+            }
+        }
+        return new FilterExpressionNode(ctx.getText(), expressionNodeMap);
+    }
+
+    @Override
+    public ExpressionNode visitFilterComponent(ExpressionParser.FilterComponentContext ctx) {
+        if (ctx.payloadAccess() != null) {
+            return visit(ctx.payloadAccess());
+        } else if (ctx.stringOrOperator() != null) {
+            return null;
+        } else if (ctx.variableAccess() != null) {
+            return visit(ctx.variableAccess());
+        }
+        return null;
+    }
 
     @Override
     public ExpressionNode visitChildren(org.antlr.v4.runtime.tree.RuleNode node) {

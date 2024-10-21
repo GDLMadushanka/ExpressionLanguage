@@ -17,6 +17,10 @@ public class ArrayIndexNode implements ExpressionNode {
     public ExpressionResult evaluate(EvaluationContext context) {
         List<String> indexList = new ArrayList<>();
         for (ExpressionNode index : indexArray) {
+            if(index == null) {
+                indexList.add("");
+                continue;
+            }
             ExpressionResult result = index.evaluate(context);
             if (result != null) {
                 indexList.add(result.asString());
