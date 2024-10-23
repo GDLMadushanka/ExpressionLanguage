@@ -3,13 +3,14 @@ package org.example.antlr.ast;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.internal.LazilyParsedNumber;
 import org.example.antlr.exception.EvaluationException;
 
 /**
  * This class represents the result of an expression evaluation.
  */
 public class ExpressionResult {
-    private Object value;
+    private final Object value;
 
     // Constructor for String
     public ExpressionResult(String value) {
@@ -19,6 +20,7 @@ public class ExpressionResult {
     public ExpressionResult(Number value) {
         this.value = value;
     }
+
     // Constructor for int
     public ExpressionResult(int value) {
         this.value = value;
@@ -74,7 +76,7 @@ public class ExpressionResult {
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isNumber()) {
             return ((JsonPrimitive) value).getAsInt();
         }
-        throw new EvaluationException("Value : " + value +  " cannot be converted to int");
+        throw new EvaluationException("Value : " + value + " cannot be converted to int");
     }
 
     // Method to get value as double
@@ -84,7 +86,7 @@ public class ExpressionResult {
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isNumber()) {
             return ((JsonPrimitive) value).getAsDouble();
         }
-        throw new EvaluationException("Value : " + value +  " cannot be converted to double");
+        throw new EvaluationException("Value : " + value + " cannot be converted to double");
     }
 
     // Method to get value as boolean
@@ -94,7 +96,7 @@ public class ExpressionResult {
         } else if (value instanceof JsonPrimitive && ((JsonPrimitive) value).isBoolean()) {
             return ((JsonPrimitive) value).getAsBoolean();
         }
-        throw new EvaluationException("Value : " + value +  " cannot be converted to boolean");
+        throw new EvaluationException("Value : " + value + " cannot be converted to boolean");
     }
 
     // Method to get value as JsonElement
@@ -111,5 +113,72 @@ public class ExpressionResult {
             return null;
         }
         return value.getClass();
+    }
+
+    public boolean isInteger() {
+        return value instanceof Integer || (value instanceof JsonPrimitive && isInteger((JsonPrimitive) value));
+    }
+
+    public boolean isDouble() {
+        return value instanceof Double || (value instanceof JsonPrimitive && isDouble((JsonPrimitive) value));
+    }
+
+    public boolean isBoolean() {
+        return value instanceof Boolean || (value instanceof JsonPrimitive && ((JsonPrimitive) value).isBoolean());
+    }
+
+    public boolean isString() {
+        return value instanceof String || (value instanceof JsonPrimitive && ((JsonPrimitive) value).isString());
+    }
+
+    public boolean isObject() {
+        return value instanceof JsonElement && ((JsonElement) value).isJsonObject();
+    }
+
+    public boolean isArray() {
+        return value instanceof JsonElement && ((JsonElement) value).isJsonArray();
+    }
+
+    public boolean isJsonPrimitive() {
+        return value instanceof JsonPrimitive;
+    }
+
+    private boolean isInteger(JsonPrimitive jsonPrimitive) {
+        if (jsonPrimitive.isNumber()) {
+            Number number = jsonPrimitive.getAsNumber();
+            // Check if the number is an instance of integer types (int, long, short)
+            boolean initialCheck = number instanceof Integer || number instanceof Long || number instanceof Short;
+            if (!initialCheck && number instanceof LazilyParsedNumber) {
+                // Check if the number is an instance of integer types (int, long, short)
+                String numberString = number.toString();
+                try {
+                    Integer.parseInt(numberString);
+                    return true;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            return initialCheck;
+        }
+        return false; // Not a number, so it's not an integer
+    }
+
+    private boolean isDouble(JsonPrimitive jsonPrimitive) {
+        if (jsonPrimitive.isNumber()) {
+            Number number = jsonPrimitive.getAsNumber();
+            // Check if the number is an instance of floating-point types (float, double)
+            boolean initialCheck = number instanceof Float || number instanceof Double;
+            if (!initialCheck && number instanceof LazilyParsedNumber) {
+                // Check if the number is an instance of integer types (int, long, short)
+                String numberString = number.toString();
+                try {
+                    Double.parseDouble(numberString);
+                    return true;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        }
+        return false; // Not a number, so it's not a double
     }
 }

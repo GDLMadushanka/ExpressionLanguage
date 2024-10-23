@@ -41,8 +41,13 @@ literal
     ;
 
 variableAccess
-    : VAR ( (DOUBLE_DOT ASTERISK | DOUBLE_DOT ID | DOT ID | LBRACKET arrayIndex RBRACKET | DOT ASTERISK)*
-               | DOUBLE_DOT ID (LBRACKET arrayIndex RBRACKET)? )
+    : VAR ( (DOUBLE_DOT ASTERISK
+    | DOUBLE_DOT ID
+    | DOT ID
+    | LBRACKET arrayIndex RBRACKET
+    | DOT LBRACKET arrayIndex RBRACKET
+    | DOT ASTERISK)*
+    | DOUBLE_DOT ID (LBRACKET arrayIndex RBRACKET)? )
     ;
 
 arrayLiteral
@@ -97,7 +102,7 @@ functionCall
     : LENGTH LPAREN expression RPAREN
     | TOUPPER LPAREN expression RPAREN
     | TOLOWER LPAREN expression RPAREN
-    | SUBSTRING LPAREN expression COMMA expression COMMA expression RPAREN
+    | SUBSTRING LPAREN expression COMMA expression (COMMA expression)? RPAREN
     | STARTSWITH LPAREN expression COMMA expression RPAREN
     | ENDSWITH LPAREN expression COMMA expression RPAREN
     | CONTAINS LPAREN expression COMMA expression RPAREN
@@ -112,9 +117,9 @@ functionCall
     | POW LPAREN expression COMMA expression RPAREN
     | REGISTRY LPAREN expression RPAREN (DOT GETPROPERTY LPAREN expression RPAREN)?
     | SECRET LPAREN expression RPAREN
-    | BASE64ENCODE LPAREN expression COMMA expression RPAREN
+    | BASE64ENCODE LPAREN expression (COMMA expression)? RPAREN
     | BASE64DECODE LPAREN expression RPAREN
-    | URLENCODE LPAREN expression RPAREN
+    | URLENCODE LPAREN expression (COMMA expression)? RPAREN
     | URLDECODE LPAREN expression RPAREN
     | ISNUMBER LPAREN expression RPAREN
     | ISSTRING LPAREN expression RPAREN

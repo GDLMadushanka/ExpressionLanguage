@@ -1,6 +1,6 @@
 lexer grammar ExpressionLexer;
 
-JSONPATH_FUNCTIONS: 'contains' | 'in' | 'nin' | 'subsetof' | 'size' | 'empty' | 'empty true' | 'empty false' | '=~';
+JSONPATH_FUNCTIONS: 'contains ' | 'in' | 'nin' | 'subsetof' | 'size' | 'empty' | 'empty true' | 'empty false' | '=~';
 
 // Tokens for identifiers, operators, and keywords
 VAR: 'var';
@@ -31,7 +31,7 @@ POW: 'pow';
 LENGTH: 'length';
 TOUPPER: 'toUpper';
 TOLOWER: 'toLower';
-SUBSTRING: 'substring';
+SUBSTRING: 'subString';
 STARTSWITH: 'startsWith';
 ENDSWITH: 'endsWith';
 CONTAINS: 'contains';

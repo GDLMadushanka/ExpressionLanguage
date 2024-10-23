@@ -2,10 +2,12 @@ package org.example.antlr.ast;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.spi.json.GsonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.GsonMappingProvider;
@@ -14,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.antlr.Utils.ExpressionUtils;
 import org.example.antlr.constants.Constants;
 import org.example.antlr.context.EvaluationContext;
+import org.example.antlr.exception.EvaluationException;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -59,7 +62,7 @@ public class PayloadAccessNode implements ExpressionNode {
                 if (result != null) {
                     String regex = ExpressionUtils.escapeSpecialCharacters(entry.getKey());
                     String resultString = result.asString();
-                    if (result.getType().equals(String.class) &&
+                    if (result.isString() &&
                             !entry.getValue().getClass().equals(FilterExpressionNode.class)) {
                         resultString = "\"" + resultString + "\"";
                     }
@@ -74,31 +77,37 @@ public class PayloadAccessNode implements ExpressionNode {
 
         Object result;
         if (!isVariable) {
-            result = JsonPath.parse(context.getPayload().toString()).read(expression);
-        } else {
-            String variableName;
-            String varExpression = null;
-            // remove var. prefix
-            String withoutPrefix = expression.substring(4);
-            // Check if there is a dot to separate the variable name from the expression
-            int firstDotIndex = withoutPrefix.indexOf('.');
-            if (firstDotIndex == -1) {
-                variableName = withoutPrefix;
-            } else {
-                variableName = withoutPrefix.substring(0, firstDotIndex);
-                varExpression = withoutPrefix.substring(firstDotIndex + 1);
+            try {
+                result = JsonPath.parse(context.getPayload().toString()).read(expression);
+            } catch (PathNotFoundException e) {
+                throw new EvaluationException("Evaluating expression: " + expression
+                        + " failed. Path not found in payload");
             }
-            Object variable = context.getVariable(variableName);
-            if (StringUtils.isEmpty(expression)) {
-                return new ExpressionResult(variable.toString());
+        } else {
+            String[] variableAndExpression = ExpressionUtils.extractVariableAndJsonPath(expression);
+            Object variable = context.getVariable(variableAndExpression[0]);
+            if (variable == null) {
+                throw new EvaluationException("Variable " + variableAndExpression[0] + " is not defined");
+            }
+            String expressionToEvaluate = variableAndExpression[1];
+            if (StringUtils.isEmpty(expressionToEvaluate)) {
+                JsonElement jsonElement = JsonParser.parseString(variable.toString());
+                return new ExpressionResult(jsonElement);
             } else {
-                result = JsonPath.parse(variable).read("$." + varExpression);
+                expressionToEvaluate = expressionToEvaluate.startsWith(".") ? "$" + expressionToEvaluate
+                        : "$." + expressionToEvaluate;
+                try {
+                    result = JsonPath.parse(variable.toString()).read(expressionToEvaluate);
+                } catch (PathNotFoundException e) {
+                    throw new EvaluationException("Evaluating expression: " + expression
+                            + " failed. Path not found in variable");
+                }
             }
         }
         if (result instanceof JsonPrimitive) {
             return new ExpressionResult((JsonPrimitive) result);
         } else if (result instanceof JsonElement) {
-            return new ExpressionResult(result.toString());
+            return new ExpressionResult((JsonElement) result);
         }
         return null;
     }

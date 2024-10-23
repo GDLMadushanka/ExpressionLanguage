@@ -57,9 +57,9 @@ public class LiteralNode implements ExpressionNode {
                     ExpressionResult result = expressionNode.evaluate(context);
                     if (result.getType().equals(JsonElement.class)) {
                         jsonArray.add(result.asJsonElement());
-                    } else if (result.getType().equals(Integer.class)) {
+                    } else if (result.isInteger()) {
                         jsonArray.add(result.asInt());
-                    } else if (result.getType().equals(Double.class)) {
+                    } else if (result.isDouble()) {
                         jsonArray.add(result.asDouble());
                     } else {
                         jsonArray.add(result.asString());

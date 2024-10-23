@@ -3,15 +3,11 @@ package org.example.antlr.evaluator;
 import com.example.antlr.ExpressionParser;
 import com.example.antlr.ExpressionParserBaseVisitor;
 import com.example.antlr.ExpressionParserVisitor;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.example.antlr.ast.*;
 import org.example.antlr.constants.Constants;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Filter;
 import java.util.logging.Logger;
 
 public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNode>
@@ -118,6 +114,48 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             return new PredefinedFunctionNode(parameterList, Constants.TO_UPPER);
         } else if (ctx.TOLOWER() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.TO_LOWER);
+        } else if (ctx.SUBSTRING() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.SUBSTRING);
+        } else if (ctx.STARTSWITH()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.STARTS_WITH);
+        } else if (ctx.ENDSWITH()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.ENDS_WITH);
+        } else if (ctx.CONTAINS()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.CONTAINS);
+        } else if (ctx.TRIM()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.TRIM);
+        } else if (ctx.REPLACE()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.REPLACE);
+        } else if (ctx.SPLIT()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.SPLIT);
+        } else if (ctx.ABS()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.ABS);
+        } else if (ctx.CEIL()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.CEIL);
+        } else if (ctx.FLOOR()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.FLOOR);
+        } else if (ctx.SQRT()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.SQRT);
+        } else if (ctx.LOG()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.LOG);
+        } else if (ctx.POW()!=null){
+            return new PredefinedFunctionNode(parameterList, Constants.POW);
+        } else if (ctx.BASE64ENCODE() !=null){
+            return new PredefinedFunctionNode(parameterList, Constants.B64ENCODE);
+        } else if (ctx.BASE64DECODE() !=null){
+            return new PredefinedFunctionNode(parameterList, Constants.B64DECODE);
+        } else if (ctx.URLENCODE() !=null){
+            return new PredefinedFunctionNode(parameterList, Constants.URL_ENCODE);
+        } else if (ctx.URLDECODE() !=null){
+            return new PredefinedFunctionNode(parameterList, Constants.URL_DECODE);
+        } else if (ctx.ISSTRING() !=null){
+            return new PredefinedFunctionNode(parameterList, Constants.IS_STRING);
+        } else if (ctx.ISNUMBER() != null){
+            return new PredefinedFunctionNode(parameterList, Constants.IS_NUMBER);
+        } else if (ctx.ISARRAY() != null){
+            return new PredefinedFunctionNode(parameterList, Constants.IS_ARRAY);
+        } else if (ctx.ISOBJECT() != null){
+            return new PredefinedFunctionNode(parameterList, Constants.IS_OBJECT);
         }
         return null;
     }
@@ -182,6 +220,12 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             }
         } else if (ctx.ASTERISK() != null) {
             return null;
+        } else if (ctx.multipleArrayIndices() != null) {
+            return visit(ctx.multipleArrayIndices());
+        } else if (ctx.sliceArrayIndex() != null) {
+            return visit(ctx.sliceArrayIndex());
+        } else if (ctx.filterExpression()!=null){
+            return visit(ctx.filterExpression());
         }
         return visitChildren(ctx);
     }
@@ -272,10 +316,4 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
         return super.visitErrorNode(node);
     }
 
-    @FunctionalInterface
-    public interface MemberAccessOperation {
-        ExpressionNode apply(ExpressionNode target);
-    }
-
 }
-

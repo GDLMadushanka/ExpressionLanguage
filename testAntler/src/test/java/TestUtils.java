@@ -15,7 +15,7 @@ import java.util.Map;
 public class TestUtils {
 
     private static String PAYLOAD1 = "{\"name\":\"John\",\"age\":30,\"cars\":[ \"Ford\", " +
-            "\"BMW\", \"Fiat\", \"Honda\", \"Lexus\", \"KIA\" ],\"index\":1}";
+            "\"BMW\", \"Fiat\", \"Honda\", \"Lexus\", \"KIA\" ],\"index\":1,\"string\":\" Hello World \"}";
     private static String PAYLOAD2 = "{\n" +
             "  \"store\": {\n" +
             "    \"book\": [\n" +
@@ -69,14 +69,18 @@ public class TestUtils {
 
     private static final Map<String,Object> variableMap1 = Map.of("name","John","age","30","cars",
             "[\"Ford\",\"BMW\",\"Fiat\",\"Honda\",\"Lexus\",\"KIA\"]","index","1",
-            "num1",10,"num2",5,"num3",-2.5);
+            "num1",10,"num2",5,"num3",-2.5,"num4",-2.0,"encoded","V1NPMk1J",
+            "empty","");
+
+    private static final Map<String,Object> variableMap2 = Map.of("json1",PAYLOAD1,"json2",PAYLOAD2,"json3","[1,2,3,\"abc\"]");
+
     public static String evaluateExpression(String expression) {
         return evaluateExpressionWithPayload(expression, 0);
     }
     public static String evaluateExpressionWithPayload(String expression, int payloadId) {
         return evaluateExpressionWithPayloadAndVariables(expression, payloadId, 0);
     }
-    public static String evaluateExpressionWithPayloadAndVariables(String expression, int payloadId, int mapId) {
+    public static String evaluateExpressionWithPayloadAndVariables(String expression, int payloadId, int variableMapId) {
         CharStream input = CharStreams.fromString(expression);
         ExpressionLexer lexer = new ExpressionLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -86,13 +90,16 @@ public class TestUtils {
         parser.addErrorListener(errorListener);
 
         ParseTree tree = parser.expression();
-        ExpressionParser.ExpressionContext expressionContext = parser.expression();
         ExpressionVisitor visitor = new ExpressionVisitor();
         ExpressionNode expressionNode = visitor.visit(tree);
 
         EvaluationContext context = new EvaluationContext();
-        if (mapId == 1) {
+        if (variableMapId == 1) {
             for (Map.Entry<String, Object> entry : variableMap1.entrySet()) {
+                context.setVariable(entry.getKey(), entry.getValue());
+            }
+        } else if (variableMapId == 2) {
+            for (Map.Entry<String, Object> entry : variableMap2.entrySet()) {
                 context.setVariable(entry.getKey(), entry.getValue());
             }
         }
