@@ -30,6 +30,11 @@ public class Constants {
     public static final String  IS_ARRAY = "isArray";
     public static final String  IS_OBJECT = "isObject";
 
+    public static final String  INTEGER = "integer";
+    public static final String  FLOAT = "float";
+    public static final String  STRING = "string";
+    public static final String  BOOLEAN = "boolean";
+
     public static final String  PAYLOAD = "payload";
     public static final String  PAYLOAD_$ = "$";
 }

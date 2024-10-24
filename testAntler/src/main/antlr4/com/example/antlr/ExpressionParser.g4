@@ -41,13 +41,16 @@ literal
     ;
 
 variableAccess
-    : VAR ( (DOUBLE_DOT ASTERISK
-    | DOUBLE_DOT ID
-    | DOT ID
-    | LBRACKET arrayIndex RBRACKET
-    | DOT LBRACKET arrayIndex RBRACKET
-    | DOT ASTERISK)*
-    | DOUBLE_DOT ID (LBRACKET arrayIndex RBRACKET)? )
+    : VAR ( DOT ID  // Dot notation: var.variableName
+          | (DOT)? LBRACKET STRING_LITERAL RBRACKET  // Bracket notation: var["variableName"]
+          )
+      ( (DOUBLE_DOT ASTERISK    // Handles recursive descent and wildcard, like var.variableName..*
+        | DOT ASTERISK          // Handles wildcard after dot notation, like var.variableName.*
+        | DOT ID
+        | LBRACKET arrayIndex RBRACKET   // Handles array access, like var.variableName[...]
+        | DOT LBRACKET arrayIndex RBRACKET   // Handles dot followed by bracket notation, like var.variableName.["property"]
+        )*
+      )
     ;
 
 arrayLiteral
@@ -55,10 +58,14 @@ arrayLiteral
     ;
 
 payloadAccess
-    : PAYLOAD ( (DOUBLE_DOT ASTERISK | DOUBLE_DOT ID | DOT ID | LBRACKET arrayIndex RBRACKET | DOT ASTERISK)*
-              | DOUBLE_DOT ID (LBRACKET arrayIndex RBRACKET)? )
+    : PAYLOAD ( (DOUBLE_DOT ASTERISK
+    | DOUBLE_DOT ID
+    | DOT ID
+    | LBRACKET arrayIndex RBRACKET
+    | DOT LBRACKET arrayIndex RBRACKET
+    | DOT ASTERISK)*
+    | DOUBLE_DOT ID (LBRACKET arrayIndex RBRACKET)? )
     ;
-
 
 arrayIndex
     : NUMBER

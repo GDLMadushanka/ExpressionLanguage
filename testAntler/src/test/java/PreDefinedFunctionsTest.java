@@ -277,6 +277,94 @@ public class PreDefinedFunctionsTest {
                 "isNumber(payload[\"age\"]) && isNumber(var.num1)",1,1));
         Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayloadAndVariables(
                 "isNumber(payload[\"string\"]) || isNumber(var.name)",1,1));
+        Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isNumber(var.empty)",1,1));
         Assert.assertEquals("false", TestUtils.evaluateExpression("isNumber(\"Hello\")"));
+    }
+
+    @Test
+    public void testIsString(){
+        Assert.assertEquals("true", TestUtils.evaluateExpression("isString(\"Hello\")"));
+        Assert.assertEquals("false", TestUtils.evaluateExpression("isString(34)"));
+        Assert.assertEquals("true", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isString(payload[\"name\"]) && isString(var.name)",1,1));
+        Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isString(payload[\"age\"]) || isString(var.num1)",1,1));
+        Assert.assertEquals("true", TestUtils.evaluateExpression("isString(\"34\")"));
+    }
+
+    @Test
+    public void testIsArray(){
+        Assert.assertEquals("true", TestUtils.evaluateExpression("isArray([\"Hello\",34])"));
+        Assert.assertEquals("false", TestUtils.evaluateExpression("isArray(\"Hello\")"));
+        Assert.assertEquals("true", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isArray(payload[\"cars\"]) && isArray(var.cars)",1,1));
+        Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isArray(payload[\"age\"]) || isArray(var.num1)",1,1));
+        Assert.assertEquals("true", TestUtils.evaluateExpression("isArray([\"34\"])"));
+        Assert.assertEquals("true", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isArray(payload)",3,1));
+    }
+
+    @Test
+    public void testIsObject(){
+        Assert.assertEquals("false", TestUtils.evaluateExpression("isObject(\"Hello\")"));
+        Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isObject(payload) && isObject(var.name)",3,1));
+        Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isObject(payload[\"age\"]) || isObject(var.num1)",1,1));
+        Assert.assertEquals("true", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "isObject(payload.store)",2,1));
+    }
+
+    @Test
+    public void testConvertToString(){
+        Assert.assertEquals("12 Angry Men", TestUtils.evaluateExpression("string(12) + \" Angry Men\""));
+        Assert.assertEquals("Hello", TestUtils.evaluateExpression("string(\"Hello\")"));
+        Assert.assertEquals("true", TestUtils.evaluateExpression("string(true)"));
+        Assert.assertEquals("false", TestUtils.evaluateExpression("string(false)"));
+        Assert.assertEquals("[\"When\",\"my\",\"time\",\"comes\",\"Forget\",\"the\",\"wrong\",\"that\"," +
+                "\"I've\",\"done\"]", TestUtils.evaluateExpressionWithPayload("string(payload)",3));
+        Assert.assertEquals("300", TestUtils.evaluateExpressionWithPayloadAndVariables("string(var.age * 10)",0,1));
+    }
+
+    @Test
+    public void testConvertToInteger() {
+        Assert.assertEquals("34", TestUtils.evaluateExpression("integer(34)"));
+        Assert.assertEquals("20.0", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "integer(payload[\"expensive\"]) + var.num1",2,1));
+        EvaluationException exception = Assert.assertThrows(EvaluationException.class,
+                () -> TestUtils.evaluateExpression("integer(\"Hello\")"));
+        Assert.assertEquals("Conversion to integer failed for : Hello", exception.getMessage());
+        exception = Assert.assertThrows(EvaluationException.class,
+                () -> TestUtils.evaluateExpression("integer(34.5)"));
+        Assert.assertEquals("Conversion to integer failed for : 34.5", exception.getMessage());
+        exception = Assert.assertThrows(EvaluationException.class,
+                () -> TestUtils.evaluateExpressionWithPayload("integer(payload)",3));
+        Assert.assertEquals("Conversion to integer failed for : [\"When\",\"my\",\"time\",\"comes\",\"Forget\"," +
+                "\"the\",\"wrong\",\"that\",\"I've\",\"done\"]", exception.getMessage());
+    }
+
+    @Test
+    public void testConvertToFloat(){
+        Assert.assertEquals("-34.0", TestUtils.evaluateExpression("float(-34)"));
+        Assert.assertEquals("15.0", TestUtils.evaluateExpressionWithPayloadAndVariables(
+                "float(payload[\"expensive\"]) + var.num2",2,1));
+        EvaluationException exception = Assert.assertThrows(EvaluationException.class,
+                () -> TestUtils.evaluateExpression("float(\"Hello\")"));
+        Assert.assertEquals("Conversion to float failed for : Hello", exception.getMessage());
+        exception = Assert.assertThrows(EvaluationException.class,
+                () -> TestUtils.evaluateExpressionWithPayload("float(payload)",3));
+        Assert.assertEquals("Conversion to float failed for : [\"When\",\"my\",\"time\",\"comes\",\"Forget\"," +
+                "\"the\",\"wrong\",\"that\",\"I've\",\"done\"]", exception.getMessage());
+    }
+
+    @Test
+    public void testConvertToBoolean(){
+        Assert.assertEquals("true", TestUtils.evaluateExpression("boolean(\"true\")"));
+        Assert.assertEquals("false", TestUtils.evaluateExpression("boolean(\"bla\")"));
+        Assert.assertEquals("false", TestUtils.evaluateExpression("boolean(\"1\")"));
+        Assert.assertEquals("true", TestUtils.evaluateExpression("boolean(\"0\") || (5 > 2)"));
+        Assert.assertEquals("false", TestUtils.evaluateExpressionWithPayload("boolean(payload)",3));
     }
 }

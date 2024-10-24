@@ -73,7 +73,7 @@ public class PredefinedFunctionNode implements ExpressionNode {
                     }
                 case Constants.CEIL:
                     if (result.isInteger()) {
-                        return new ExpressionResult(Math.ceil(result.asInt()));
+                        return new ExpressionResult(result.asInt());
                     } else if (result.isDouble()) {
                         return new ExpressionResult(Math.ceil(result.asDouble()));
                     } else {
@@ -81,7 +81,7 @@ public class PredefinedFunctionNode implements ExpressionNode {
                     }
                 case Constants.FLOOR:
                     if (result.isInteger()) {
-                        return new ExpressionResult(Math.floor(result.asInt()));
+                        return new ExpressionResult(result.asInt());
                     } else if (result.isDouble()) {
                         return new ExpressionResult(Math.floor(result.asDouble()));
                     } else {
@@ -127,6 +127,35 @@ public class PredefinedFunctionNode implements ExpressionNode {
                     return new ExpressionResult(result.isArray());
                 case Constants.IS_OBJECT:
                     return new ExpressionResult(result.isObject());
+                case Constants.STRING:
+                    return new ExpressionResult(result.asString());
+                case Constants.INTEGER:
+                    if (result.isInteger()) {
+                        return new ExpressionResult(result.asInt());
+                    }
+                    try {
+                        return new ExpressionResult(Integer.parseInt(result.asString()));
+                    } catch (NumberFormatException e) {
+                        throw new EvaluationException("Conversion to integer failed for : " + result.asString());
+                    }
+                case Constants.FLOAT:
+                    if (result.isDouble()) {
+                        return new ExpressionResult(result.asDouble());
+                    }
+                    try {
+                        return new ExpressionResult(Double.parseDouble(result.asString()));
+                    } catch (NumberFormatException e) {
+                        throw new EvaluationException("Conversion to float failed for : " + result.asString());
+                    }
+                case Constants.BOOLEAN:
+                    if (result.isBoolean()) {
+                        return new ExpressionResult(result.asBoolean());
+                    }
+                    try {
+                        return new ExpressionResult(Boolean.parseBoolean(result.asString()));
+                    } catch (NumberFormatException e) {
+                        throw new EvaluationException("Conversion to boolean failed for: " + result.asString());
+                    }
             }
         } else if (arguments.size() == 2) {
             ExpressionResult source = arguments.get(0).evaluate(context);

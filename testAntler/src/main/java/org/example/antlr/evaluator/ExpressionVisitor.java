@@ -116,46 +116,54 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             return new PredefinedFunctionNode(parameterList, Constants.TO_LOWER);
         } else if (ctx.SUBSTRING() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.SUBSTRING);
-        } else if (ctx.STARTSWITH()!=null){
+        } else if (ctx.STARTSWITH() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.STARTS_WITH);
-        } else if (ctx.ENDSWITH()!=null){
+        } else if (ctx.ENDSWITH() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.ENDS_WITH);
-        } else if (ctx.CONTAINS()!=null){
+        } else if (ctx.CONTAINS() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.CONTAINS);
-        } else if (ctx.TRIM()!=null){
+        } else if (ctx.TRIM() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.TRIM);
-        } else if (ctx.REPLACE()!=null){
+        } else if (ctx.REPLACE() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.REPLACE);
-        } else if (ctx.SPLIT()!=null){
+        } else if (ctx.SPLIT() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.SPLIT);
-        } else if (ctx.ABS()!=null){
+        } else if (ctx.ABS() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.ABS);
-        } else if (ctx.CEIL()!=null){
+        } else if (ctx.CEIL() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.CEIL);
-        } else if (ctx.FLOOR()!=null){
+        } else if (ctx.FLOOR() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.FLOOR);
-        } else if (ctx.SQRT()!=null){
+        } else if (ctx.SQRT() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.SQRT);
-        } else if (ctx.LOG()!=null){
+        } else if (ctx.LOG() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.LOG);
-        } else if (ctx.POW()!=null){
+        } else if (ctx.POW() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.POW);
-        } else if (ctx.BASE64ENCODE() !=null){
+        } else if (ctx.BASE64ENCODE() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.B64ENCODE);
-        } else if (ctx.BASE64DECODE() !=null){
+        } else if (ctx.BASE64DECODE() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.B64DECODE);
-        } else if (ctx.URLENCODE() !=null){
+        } else if (ctx.URLENCODE() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.URL_ENCODE);
-        } else if (ctx.URLDECODE() !=null){
+        } else if (ctx.URLDECODE() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.URL_DECODE);
-        } else if (ctx.ISSTRING() !=null){
+        } else if (ctx.ISSTRING() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.IS_STRING);
-        } else if (ctx.ISNUMBER() != null){
+        } else if (ctx.ISNUMBER() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.IS_NUMBER);
-        } else if (ctx.ISARRAY() != null){
+        } else if (ctx.ISARRAY() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.IS_ARRAY);
-        } else if (ctx.ISOBJECT() != null){
+        } else if (ctx.ISOBJECT() != null) {
             return new PredefinedFunctionNode(parameterList, Constants.IS_OBJECT);
+        } else if (ctx.STRING() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.STRING);
+        } else if (ctx.FLOAT() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.FLOAT);
+        } else if (ctx.BOOLEAN() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.BOOLEAN);
+        } else if (ctx.INTEGER() != null) {
+            return new PredefinedFunctionNode(parameterList, Constants.INTEGER);
         }
         return null;
     }
@@ -194,7 +202,7 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
                 expressionNodeMap.put(expressionContext.getText(), visit(expressionContext));
             }
         }
-        return new PayloadAccessNode(ctx.getText(), expressionNodeMap,true);
+        return new PayloadAccessNode(ctx.getText(), expressionNodeMap, true);
     }
 
     @Override
@@ -205,7 +213,7 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
                 expressionNodeMap.put(expressionContext.getText(), visit(expressionContext));
             }
         }
-        return new PayloadAccessNode(ctx.getText(), expressionNodeMap,false);
+        return new PayloadAccessNode(ctx.getText(), expressionNodeMap, false);
     }
 
     @Override
@@ -224,7 +232,7 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
             return visit(ctx.multipleArrayIndices());
         } else if (ctx.sliceArrayIndex() != null) {
             return visit(ctx.sliceArrayIndex());
-        } else if (ctx.filterExpression()!=null){
+        } else if (ctx.filterExpression() != null) {
             return visit(ctx.filterExpression());
         }
         return visitChildren(ctx);
@@ -297,22 +305,16 @@ public class ExpressionVisitor extends ExpressionParserBaseVisitor<ExpressionNod
 
     @Override
     public ExpressionNode visitChildren(org.antlr.v4.runtime.tree.RuleNode node) {
-        // Implement the logic to visit children of a rule node
-        System.out.println("Visiting children of rule node: " + node.getText());
         return super.visitChildren(node);
     }
 
     @Override
     public ExpressionNode visitTerminal(org.antlr.v4.runtime.tree.TerminalNode node) {
-        // Implement the logic to visit a terminal node
-        System.out.println("Visiting terminal: " + node.getText());
         return super.visitTerminal(node);
     }
 
     @Override
     public ExpressionNode visitErrorNode(org.antlr.v4.runtime.tree.ErrorNode node) {
-        // Implement the logic to visit an error node
-        System.err.println("Visiting error node: " + node.getText());
         return super.visitErrorNode(node);
     }
 

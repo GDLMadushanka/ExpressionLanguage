@@ -15,6 +15,10 @@ public class PayloadAndVariableAccessTest {
         Assert.assertEquals("[\"Ford\",\"BMW\"]", TestUtils.evaluateExpressionWithPayload("$.cars[:2]",1));
         Assert.assertEquals("[\"KIA\"]", TestUtils.evaluateExpressionWithPayload("$.cars[-1:]",1));
         Assert.assertEquals("[\"Lexus\",\"KIA\"]", TestUtils.evaluateExpressionWithPayload("payload.cars[payload.index + 3:]",1));
+        Assert.assertEquals("[\"When\",\"my\",\"time\",\"comes\"]",
+                TestUtils.evaluateExpressionWithPayload("payload.[:4]",3));
+        Assert.assertEquals("[\"Forget\",\"the\",\"wrong\",\"that\",\"I've\",\"done\"]",
+                TestUtils.evaluateExpressionWithPayload("payload[4:]",3));
         EvaluationException exception = Assert.assertThrows(EvaluationException.class,
                 () -> TestUtils.evaluateExpressionWithPayloadAndVariables("payload.random",1,1));
         Assert.assertEquals("Evaluating expression: $.random failed. Path not found in payload", exception.getMessage());

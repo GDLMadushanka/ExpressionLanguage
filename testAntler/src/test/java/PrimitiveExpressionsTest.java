@@ -129,7 +129,7 @@ public class PrimitiveExpressionsTest {
     public void testDivide() {
         Assert.assertEquals("-4.0", TestUtils.evaluateExpression("10 / 2 / -2.5 * 2"));
         Assert.assertEquals("3", TestUtils.evaluateExpression("9 / 3"));
-        Assert.assertEquals("5.0", TestUtils.evaluateExpressionWithPayloadAndVariables("var.num1 / 2", 2, 1));
+        Assert.assertEquals("5", TestUtils.evaluateExpressionWithPayloadAndVariables("var.num1 / 2", 2, 1));
         EvaluationException exception = Assert.assertThrows(EvaluationException.class,
                 () -> TestUtils.evaluateExpression("5 / \"bla\""));
         Assert.assertEquals("Invalid arguments provided for / operation", exception.getMessage());
@@ -140,7 +140,7 @@ public class PrimitiveExpressionsTest {
         Assert.assertEquals("1", TestUtils.evaluateExpression("10 % 3"));
         Assert.assertEquals("2.5", TestUtils.evaluateExpression("5.5 % 3"));
         Assert.assertEquals("2.0", TestUtils.evaluateExpression("5.5 % 3.5"));
-        Assert.assertEquals("0.0", TestUtils.evaluateExpressionWithPayloadAndVariables("var.num1 % 2", 2, 1));
+        Assert.assertEquals("0", TestUtils.evaluateExpressionWithPayloadAndVariables("var.num1 % 2", 2, 1));
         EvaluationException exception = Assert.assertThrows(EvaluationException.class,
                 () -> TestUtils.evaluateExpression("5 % \"bla\""));
         Assert.assertEquals("Invalid arguments provided for % operation", exception.getMessage());

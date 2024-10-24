@@ -67,6 +67,8 @@ public class TestUtils {
             "  \"selectedCategory\": \"biography\"\n" +
             "}\n";
 
+    private static String PAYLOAD3 = "[\"When\",\"my\",\"time\",\"comes\",\"Forget\",\"the\",\"wrong\",\"that\"" +
+            ",\"I've\",\"done\"]";
     private static final Map<String,Object> variableMap1 = Map.of("name","John","age","30","cars",
             "[\"Ford\",\"BMW\",\"Fiat\",\"Honda\",\"Lexus\",\"KIA\"]","index","1",
             "num1",10,"num2",5,"num3",-2.5,"num4",-2.0,"encoded","V1NPMk1J",
@@ -107,9 +109,24 @@ public class TestUtils {
             context.setPayload(PAYLOAD1);
         } else if (payloadId == 2) {
             context.setPayload(PAYLOAD2);
+        } else if (payloadId == 3) {
+            context.setPayload(PAYLOAD3);
         }
         ExpressionResult result = expressionNode.evaluate(context);
         return result.asString();
+    }
+
+    public static void evaluateWithErrorListener(SyntaxErrorListener errorListener, String expression) {
+        CharStream input = CharStreams.fromString(expression);
+        ExpressionLexer lexer = new ExpressionLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        ExpressionParser parser = new ExpressionParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        // trigger parsing
+        ParseTree tree = parser.expression();
+        ExpressionVisitor visitor = new ExpressionVisitor();
+        visitor.visit(tree);
     }
 
 }

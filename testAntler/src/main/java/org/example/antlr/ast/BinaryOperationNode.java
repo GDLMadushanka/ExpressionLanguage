@@ -102,34 +102,34 @@ public class BinaryOperationNode implements ExpressionNode {
         boolean isInteger = leftValue.isInteger() && rightValue.isInteger();
         switch (operator) {
             case "-":
-                if (isDouble) {
-                    return new ExpressionResult(leftValue.asDouble() - rightValue.asDouble());
-                } else if (isInteger) {
+                if (isInteger) {
                     return new ExpressionResult(leftValue.asInt() - rightValue.asInt());
+                } else if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() - rightValue.asDouble());
                 } else {
                     throw new EvaluationException("Invalid arguments provided for - operation");
                 }
             case "*":
-                if (isDouble) {
-                    return new ExpressionResult(leftValue.asDouble() * rightValue.asDouble());
-                } else if (isInteger) {
+                if (isInteger) {
                     return new ExpressionResult(leftValue.asInt() * rightValue.asInt());
+                } else if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() * rightValue.asDouble());
                 } else {
                     throw new EvaluationException("Invalid arguments provided for * operation");
                 }
             case "/":
-                if (isDouble) {
-                    return new ExpressionResult(leftValue.asDouble() / rightValue.asDouble());
-                } else if (isInteger) {
+                if (isInteger) {
                     return new ExpressionResult(leftValue.asInt() / rightValue.asInt());
+                } else if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() / rightValue.asDouble());
                 } else {
                     throw new EvaluationException("Invalid arguments provided for / operation");
                 }
             case "%":
-                if (isDouble) {
-                    return new ExpressionResult(leftValue.asDouble() % rightValue.asDouble());
-                } else if (isInteger) {
+                if (isInteger) {
                     return new ExpressionResult(leftValue.asInt() % rightValue.asInt());
+                } else if (isDouble) {
+                    return new ExpressionResult(leftValue.asDouble() % rightValue.asDouble());
                 } else {
                     throw new EvaluationException("Invalid arguments provided for % operation");
                 }
